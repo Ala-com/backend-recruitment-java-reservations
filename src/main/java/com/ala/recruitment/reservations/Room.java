@@ -1,16 +1,18 @@
-package pl.com.bottega.jpatraining.locking2;
+package com.ala.recruitment.reservations;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
+import java.util.UUID;
+
 @Entity
 class Room {
     @Id
-    private Long id;
+    private UUID id;
 
-    Room() {}
+    protected Room() {}
 
-    public Room(Long id) {
+    public Room(UUID id) {
         this.id = id;
     }
 }

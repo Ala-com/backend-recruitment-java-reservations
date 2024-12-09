@@ -1,14 +1,9 @@
-package pl.com.bottega.jpatraining.locking2;
+package com.ala.recruitment.reservations;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -43,21 +38,21 @@ public class Reservation {
     static final String IS_RESERVED_QUERY = "IS_RESERVED_QUERY";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @ManyToOne
     private Room room;
 
-    private Long customerId;
+    private UUID customerId;
 
     private LocalDate fromInclusive;
     private LocalDate untilExclusive;
 
-    Reservation() {
+    protected Reservation() {
     }
 
-    public Reservation(Room room, MakeReservationCommand command) {
+    public Reservation(UUID id, Room room, MakeReservationCommand command) {
+        this.id = id;
         this.room = room;
         this.customerId = command.customerId;
         this.fromInclusive = command.fromInclusive;

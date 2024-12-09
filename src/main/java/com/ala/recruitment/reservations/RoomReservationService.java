@@ -1,27 +1,48 @@
-package pl.com.bottega.jpatraining.locking2;
+package com.ala.recruitment.reservations;
 
-import pl.com.bottega.jpatraining.EntityManagerTemplate;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
 
+@Component
 class RoomReservationService {
 
-    private final EntityManagerTemplate entityManagerTemplate;
+    private final ReservationRepository reservationRepository;
+    private final RoomRepository roomRepository;
 
-    public RoomReservationService(EntityManagerTemplate entityManagerTemplate) {
-        this.entityManagerTemplate = entityManagerTemplate;
+    public RoomReservationService(ReservationRepository reservationRepository, RoomRepository roomRepository) {
+        this.reservationRepository = reservationRepository;
+        this.roomRepository = roomRepository;
     }
 
+    @Transactional
     public void makeReservation(MakeReservationCommand command) throws RoomNotAvailableException {
-
+        Room room = roomRepository.getReferenceById(command.roomId);
+        Boolean collisionsExist = reservationRepository.collisionsExist(command.fromInclusive, command.untilExclusive, command.roomId);
+        if (collisionsExist) {
+            throw new RoomNotAvailableException();
+        }
+        reservationRepository.save(new Reservation(
+                UUID.randomUUID(),
+                room,
+                command
+        ));
     }
 
     public boolean isReserved(ReservationQuery reservationQuery) {
-        return false;
+        return reservationRepository.isReserved(reservationQuery.roomId, reservationQuery.at, reservationQuery.customerId);
     }
 
-    public Integer reservationsCount() {
-        return 0;
+    public Integer reservationsCount(Collection<UUID> userIds) {
+        return reservationRepository.countByCustomerIdIn(userIds);
+    }
+
+    public Integer reservationsCount(UUID userId) {
+        return reservationsCount(Set.of(userId));
     }
 }
 
@@ -29,12 +50,12 @@ class RoomNotAvailableException extends RuntimeException {
 }
 
 class MakeReservationCommand {
-    Long roomId;
-    Long customerId;
+    UUID roomId;
+    UUID customerId;
     LocalDate fromInclusive;
     LocalDate untilExclusive;
 
-    public MakeReservationCommand(Long roomId, Long customerId, LocalDate fromInclusive, LocalDate untilExclusive) {
+    public MakeReservationCommand(UUID roomId, UUID customerId, LocalDate fromInclusive, LocalDate untilExclusive) {
         this.roomId = roomId;
         this.customerId = customerId;
         this.fromInclusive = fromInclusive;
@@ -43,11 +64,11 @@ class MakeReservationCommand {
 }
 
 class ReservationQuery {
-    Long roomId;
-    Long customerId;
+    UUID roomId;
+    UUID customerId;
     LocalDate at;
 
-    public ReservationQuery(Long roomId, Long customerId, LocalDate at) {
+    public ReservationQuery(UUID roomId, UUID customerId, LocalDate at) {
         this.roomId = roomId;
         this.customerId = customerId;
         this.at = at;
