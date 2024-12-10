@@ -1,5 +1,7 @@
 package com.ala.recruitment.reservations;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 
@@ -13,15 +15,21 @@ class RoomReservationService {
 
     private final ReservationRepository reservationRepository;
     private final RoomRepository roomRepository;
+    private final EntityManager entityManager;
 
-    public RoomReservationService(ReservationRepository reservationRepository, RoomRepository roomRepository) {
+    public RoomReservationService(
+            ReservationRepository reservationRepository,
+            RoomRepository roomRepository,
+            EntityManager entityManager) {
         this.reservationRepository = reservationRepository;
         this.roomRepository = roomRepository;
+        this.entityManager = entityManager;
     }
 
     @Transactional
     public void makeReservation(MakeReservationCommand command) throws RoomNotAvailableException {
         Room room = roomRepository.getReferenceById(command.roomId);
+        entityManager.lock(room, LockModeType.PESSIMISTIC_READ);
         Boolean collisionsExist = reservationRepository.collisionsExist(command.fromInclusive, command.untilExclusive, command.roomId);
         if (collisionsExist) {
             throw new RoomNotAvailableException();
