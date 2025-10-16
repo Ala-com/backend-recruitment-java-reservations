@@ -15,16 +15,19 @@ Your task is to:
 
 # Task 2
 
-Add a new feature to the system that allows a user to cancel an existing reservation.
+Add a new feature that allows users to extend the end date of their existing reservation.
 
 Functional requirements:
-1. A user should be able to cancel only those reservations that they own.
-2. It should not be possible to cancel past or ongoing reservations.
-3. Reservation can be canceled only if its cancellation policy allows it. For now, we will have just one cancellation policy that allows cancellation no later than 24 hours before the reservation starts (a reservation starts at 2:00pm on its start date). In the future, we will have more cancellation policies.
-4. When a reservation is canceled, the room can be booked by other users or even by the same user again.
-5. The system should remember canceled reservations, we don't want to lose data.
+1. A user should be able to extend only those reservations that they own.
+2. It should not be possible to extend past or ongoing reservations.
+3. Extension can only move the end date forward (new end date must be after current end date).
+4. The room must be available for the extended period. The system should check if the room is free during the extension window, but the current reservation itself should not be considered a collision.
+5. If the room is not available for the entire extension period, the operation should fail and the original reservation should remain unchanged.
 
 Non-functional requirements:
 1. When making changes, make sure to follow the current project architecture and style.
-2. New features should be covered with tests, and the existing functionality should not be changed. 
+2. New features should be covered with tests, and the existing functionality should not be changed.
 
+Hints:
+- Think carefully about how collision detection works and how to handle checking availability against the reservation's own time slot.
+- The operation should be atomic - either the reservation is extended successfully or it remains unchanged.
